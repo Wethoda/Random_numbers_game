@@ -2,7 +2,7 @@ import random
 from config import DIFFICULTY_LEVELS
 
 class Game:
-    def __init__(self, difficalty="средний"):
+    def __init__(self):
         super().__init__()
 
         self.target_number = None
