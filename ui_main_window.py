@@ -15,7 +15,6 @@ class UiMainWindow(QMainWindow):
         self.check_button = QPushButton("Проверить", self)
         self.reset_button = QPushButton("Начать заново", self)
 
-        # Добавляем ComboBox для выбора уровня сложности
         self.difficulty_label = QLabel("Выберите сложность:", self)
         self.difficulty_combo = QComboBox(self)
         self.difficulty_combo.addItems(["легкий", "средний", "сложный"])
