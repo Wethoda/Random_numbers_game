@@ -1,16 +1,19 @@
 import sys
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QMessageBox
 from ui_main_window import UiMainWindow
 from game_logic import Game
-from database import init_db
+from database import init_db, check_user, add_user
 from log_window import LoginWindow
 
 init_db()
+
 class MainApp(UiMainWindow):
-    def __init__(self):
+    def __init__(self, username):
         super().__init__()
 
+        self.username = username  # Сохраняем имя пользователя
         self.game = Game()
+
         self.check_button.clicked.connect(self.check_guess)
         self.reset_button.clicked.connect(self.start_new_game)
 
@@ -24,7 +27,7 @@ class MainApp(UiMainWindow):
         self.result_label.setText(f"Загадано число от {self.game.min_range} до {self.game.max_range}. Начинайте угадывать!")
         self.input_field.clear()
 
-        self.check_button.setEnabled(True) # Разблокируем кнопку после начала новой игры.
+        self.check_button.setEnabled(True)  # Разблокируем кнопку после начала новой игры.
 
     def check_guess(self):
         """Проверка введённого числа"""
@@ -42,7 +45,7 @@ class MainApp(UiMainWindow):
 
         if user_number == self.game.target_number:
             self.result_label.setText(f"Поздравляю! Вы угадали число {self.game.target_number} за {self.game.count} попыток!")
-            self.check_button.setEnabled(False) # Блокируем кнопку после угадывания числа.
+            self.check_button.setEnabled(False)  # Блокируем кнопку после угадывания числа.
         elif user_number < self.game.target_number:
             self.result_label.setText("Загаданное число больше.")
         else:
@@ -51,30 +54,46 @@ class MainApp(UiMainWindow):
         self.input_field.clear()
 
 class Application:
-        def __init__(self):
-            self.app = QApplication(sys.argv)
+    def __init__(self):
+        self.app = QApplication(sys.argv)
 
-            self.login_window = LoginWindow()
-            self.login_window.login_button.clicked.connect(self.handle_login)
-            self.login_window.register_button.clicked.connect(self.handle_register)
-            self.login_window.show()
+        self.login_window = LoginWindow()
+        self.login_window.login_button.clicked.connect(self.handle_login)
+        self.login_window.register_button.clicked.connect(self.handle_register)
+        self.login_window.show()
 
-        def handle_login(self):
-            username = self.login_window.login_input.text()
-            password = self.login_window.password_input.text()
+    def handle_login(self):
+        """Обработчик входа"""
+        username = self.login_window.login_input.text()
+        password = self.login_window.password_input.text()
 
-            if username == "user" and password == "pass":
-                self.login_window.close()
-                self.main_game = MainApp()
-                self.main_game.show()
-            else:
-                self.login_window.login_label.setText("Неверный логин или пароль.")
+        if not username or not password:
+            QMessageBox.warning(self.login_window, "Ошибка", "Поля логин и пароль не могут быть пустыми!")
+            return
 
-        def handle_register(self):
-            pass
+        if check_user(username, password):  # Проверка в базе данных
+            self.login_window.close()
+            self.main_game = MainApp(username)  # Передаем имя пользователя
+            self.main_game.show()
+        else:
+            QMessageBox.warning(self.login_window, "Ошибка", "Неверный логин или пароль.")
 
-        def run(self):
-            sys.exit(self.app.exec())
+    def handle_register(self):
+        """Обработчик регистрации"""
+        username = self.login_window.login_input.text()
+        password = self.login_window.password_input.text()
+
+        if not username or not password:
+            QMessageBox.warning(self.login_window, "Ошибка", "Поля логин и пароль не могут быть пустыми!")
+            return
+
+        if add_user(username, password):  # Добавляем нового пользователя в базу
+            QMessageBox.information(self.login_window, "Успех", "Вы успешно зарегистрировались!")
+        else:
+            QMessageBox.warning(self.login_window, "Ошибка", "Пользователь с таким логином уже существует!")
+
+    def run(self):
+        sys.exit(self.app.exec())
 
 if __name__ == "__main__":
     app = Application()
