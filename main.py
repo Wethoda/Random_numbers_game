@@ -2,7 +2,9 @@ import sys
 from PySide6.QtWidgets import QApplication
 from ui_main_window import UiMainWindow
 from game_logic import Game
+from database import init_db
 
+init_db()
 class MainApp(UiMainWindow):
     def __init__(self):
         super().__init__()
