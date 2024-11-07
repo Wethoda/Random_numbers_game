@@ -3,6 +3,7 @@ from PySide6.QtWidgets import QApplication
 from ui_main_window import UiMainWindow
 from game_logic import Game
 from database import init_db
+from log_window import LoginWindow
 
 init_db()
 class MainApp(UiMainWindow):
@@ -49,8 +50,32 @@ class MainApp(UiMainWindow):
 
         self.input_field.clear()
 
+class Application:
+        def __init__(self):
+            self.app = QApplication(sys.argv)
+
+            self.login_window = LoginWindow()
+            self.login_window.login_button.clicked.connect(self.handle_login)
+            self.login_window.register_button.clicked.connect(self.handle_register)
+            self.login_window.show()
+
+        def handle_login(self):
+            username = self.login_window.login_input.text()
+            password = self.login_window.password_input.text()
+
+            if username == "user" and password == "pass":
+                self.login_window.close()
+                self.main_game = MainApp()
+                self.main_game.show()
+            else:
+                self.login_window.login_label.setText("Неверный логин или пароль.")
+
+        def handle_register(self):
+            pass
+
+        def run(self):
+            sys.exit(self.app.exec())
+
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = MainApp()
-    window.show()
-    sys.exit(app.exec())
+    app = Application()
+    app.run()

@@ -17,7 +17,7 @@ class UiMainWindow(QMainWindow):
 
         self.difficulty_label = QLabel("Выберите сложность:", self)
         self.difficulty_combo = QComboBox(self)
-        self.difficulty_combo.addItems(["легкий", "средний", "сложный"])
+        self.difficulty_combo.addItems(["Легкий", "Средний", "Сложный"])
 
         layout = QVBoxLayout()
         layout.addWidget(self.difficulty_label)

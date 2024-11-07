@@ -5,7 +5,7 @@ class Game:
     def __init__(self):
         self.target_number = None
         self.count = 0
-        self.min_range, self.max_range = DIFFICULTY_LEVELS["легкий"]  # Начальный уровень
+        self.min_range, self.max_range = DIFFICULTY_LEVELS["Легкий"]  # Начальный уровень
 
     def check_guess(self, guess):
         """Проверка, угадал ли пользователь число"""
@@ -17,7 +17,7 @@ class Game:
         else:
             print("Загаданное число меньше")
 
-    def reset_game(self, difficulty="легкий"):
+    def reset_game(self, difficulty="Легкий"):
         """Перезапуск игры с новым уровнем сложности"""
         self.min_range, self.max_range = DIFFICULTY_LEVELS[difficulty]
         self.target_number = random.randint(self.min_range, self.max_range)
