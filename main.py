@@ -2,15 +2,16 @@ import sys
 from PySide6.QtWidgets import QApplication, QMessageBox
 from ui_main_window import UiMainWindow
 from game_logic import Game
-from database import init_db, check_user, add_user
+from database import init_db, check_user, add_user, log_game_result
 from log_window import LoginWindow
 
 init_db()
 
 class MainApp(UiMainWindow):
-    def __init__(self, username):
+    def __init__(self, user_id, username):
         super().__init__()
 
+        self.user_id = user_id
         self.username = username  # Сохраняем имя пользователя
         self.game = Game()
 
@@ -46,12 +47,16 @@ class MainApp(UiMainWindow):
         if user_number == self.game.target_number:
             self.result_label.setText(f"Поздравляю! Вы угадали число {self.game.target_number} за {self.game.count} попыток!")
             self.check_button.setEnabled(False)  # Блокируем кнопку после угадывания числа.
+
+            difficulty = self.difficulty_combo.currentText()
+            log_game_result(self.user_id, self.game.count, self.game.target_number, difficulty)
+            self.input_field.clear()
+
         elif user_number < self.game.target_number:
             self.result_label.setText("Загаданное число больше.")
         else:
             self.result_label.setText("Загаданное число меньше.")
 
-        self.input_field.clear()
 
 class Application:
     def __init__(self):
@@ -71,9 +76,11 @@ class Application:
             QMessageBox.warning(self.login_window, "Ошибка", "Поля логин и пароль не могут быть пустыми!")
             return
 
-        if check_user(username, password):  # Проверка в базе данных
+        user_id = check_user(username, password)  # Проверка в базе данных
+
+        if user_id:  # Если пользователь найден
             self.login_window.close()
-            self.main_game = MainApp(username)  # Передаем имя пользователя
+            self.main_game = MainApp(user_id, username)  # Передаем ID и имя пользователя
             self.main_game.show()
         else:
             QMessageBox.warning(self.login_window, "Ошибка", "Неверный логин или пароль.")

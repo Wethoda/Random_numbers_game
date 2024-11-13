@@ -10,6 +10,15 @@ def init_db():
                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                    login VARCHAR(50) NOT NULL,
                    password VARCHAR(50) NOT NULL)""")
+
+    cursor.execute("""CREATE TABLE IF NOT EXISTS game_logs(
+                       id INTEGER PRIMARY KEY AUTOINCREMENT,
+                       id_user INTEGER NOT NULL,
+                       attempt_count INTEGER NOT NULL,
+                       target_number INTEGER NOT NULL,
+                       difficulty TEXT NOT NULL,
+                       FOREIGN KEY (id_user) REFERENCES users(id))""")
+
     connect.commit()
     connect.close()
 
@@ -28,10 +37,22 @@ def check_user(username, password):
     """Проверка есть ли такой пользователь в базе данных"""
     connect = sqlite3.connect(DATABASE_NAME)
     cursor = connect.cursor()
-    cursor.execute("SELECT * FROM users WHERE login = ? AND password = ?", (username, password))
+    cursor.execute("SELECT id FROM users WHERE login = ? AND password = ?", (username, password))
     user = cursor.fetchone()
     connect.close()
-    return user is not None
+    return user[0] if user else None
+
+def log_game_result(user_id, attempt_count, target_number, difficulty):
+    """Логируем результаты игры"""
+    connect = sqlite3.connect(DATABASE_NAME)
+    cursor = connect.cursor()  # Вызов метода cursor() для создания курсора
+
+    cursor.execute("""INSERT INTO game_logs (id_user, attempt_count, target_number, difficulty) 
+                      VALUES(?, ?, ?, ?)""", (user_id, attempt_count, target_number, difficulty))
+
+    connect.commit()
+    connect.close()
+
 
 def get_db_connection():
     return sqlite3.connect(DATABASE_NAME)
